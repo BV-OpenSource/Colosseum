@@ -111,6 +111,7 @@ namespace airlib
                     throw std::invalid_argument("UdpPort setting has an invalid value.");
                 }
 
+                Utils::log(Utils::stringf("VehicleSolo is %s", connection_info_.model.c_str()), Utils::kLogLevelInfo);
                 Utils::log(Utils::stringf("Using UDP port %d, local IP %s, remote IP %s for sending sensor data", port, connection_info_.local_host_ip.c_str(), ip.c_str()), Utils::kLogLevelInfo);
                 Utils::log(Utils::stringf("Using UDP port %d for receiving rotor power", connection_info_.control_port_local, connection_info_.local_host_ip.c_str(), ip.c_str()), Utils::kLogLevelInfo);
 

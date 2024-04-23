@@ -37,8 +37,16 @@ namespace airlib
 
             // Use connection_info_.model for the model name, see Px4MultiRotorParams for example
 
-            // Only Generic for now
-            setupFrameGenericQuad(params);
+            if (connection_info_.model == "HEIFU") {
+                setupFrameHEIFU(params);
+            }
+            else if (connection_info_.model == "Hexacopter") {
+                setupFrameGenericHex(params);
+            }
+            else {
+                // Only Generic for now
+                setupFrameGenericQuad(params);
+            }
         }
 
         virtual const SensorFactory* getSensorFactory() const override

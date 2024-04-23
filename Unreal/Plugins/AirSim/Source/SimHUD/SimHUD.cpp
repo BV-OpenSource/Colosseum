@@ -155,7 +155,7 @@ void ASimHUD::createMainWidget()
         auto* pawn = player_controller->GetPawn();
         if (pawn) {
             std::string pawn_name = std::string(TCHAR_TO_ANSI(*pawn->GetName()));
-            Utils::log(pawn_name);
+            Utils::log(Utils::stringf("Vehicle name: %s", pawn_name.c_str()), Utils::kLogLevelInfo);
         }
         else {
             UAirBlueprintLib::ShowMessage(EAppMsgType::Ok, std::string("There were no compatible vehicles created for current SimMode! Check your settings.json."), "Error");
