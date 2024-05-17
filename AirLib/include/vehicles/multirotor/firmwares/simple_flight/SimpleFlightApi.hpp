@@ -42,6 +42,7 @@ namespace airlib
             comm_link_.reset(new AirSimSimpleFlightCommLink());
             estimator_.reset(new AirSimSimpleFlightEstimator());
 
+            params_.motor.motor_count = vehicle_params_->getParams().rotor_count;
             //create firmware
             firmware_.reset(new simple_flight::Firmware(&params_, board_.get(), comm_link_.get(), estimator_.get()));
         }
@@ -108,6 +109,7 @@ namespace airlib
         }
         virtual void moveByRC(const RCData& rc_data) override
         {
+            //Utils::log(Utils::stringf("MoveByRC"));
             setRCData(rc_data);
         }
         virtual void setSimulatedGroundTruth(const Kinematics::State* kinematics, const Environment* environment) override
@@ -409,6 +411,7 @@ namespace airlib
             remote_control_id_ = vehicle_setting.rc.remote_control_id;
             params_.rc.allow_api_when_disconnected = vehicle_setting.rc.allow_api_when_disconnected;
             params_.rc.allow_api_always = vehicle_setting.allow_api_always;
+            params_.rc.type = vehicle_setting.rc.type;
         }
 
     private:

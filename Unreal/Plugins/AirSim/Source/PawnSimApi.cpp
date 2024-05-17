@@ -220,7 +220,7 @@ msr::airlib::RCData PawnSimApi::getRCData() const
         UAirBlueprintLib::LogMessageString("Joystick (T,R,P,Y,Buttons): ", Utils::stringf("%f, %f, %f %f, %s", rc_data_.throttle, rc_data_.roll, rc_data_.pitch, rc_data_.yaw, Utils::toBinaryString(joystick_state_.buttons).c_str()), LogDebugLevel::Informational);
 
         //TODO: should below be at controller level info?
-        UAirBlueprintLib::LogMessageString("RC Mode: ", rc_data_.getSwitch(0) == 0 ? "Angle" : "Rate", LogDebugLevel::Informational);
+        // UAirBlueprintLib::LogMessageString("RC Mode: ", rc_data_.getSwitch(0) == 0 ? "Angle" : "Rate", LogDebugLevel::Informational);
     }
     //else don't waste time
 
@@ -537,14 +537,17 @@ void PawnSimApi::setKinematics(const Kinematics::State& state, bool ignore_colli
 
     return kinematics_->setState(state);
 }
+
 const msr::airlib::Environment* PawnSimApi::getGroundTruthEnvironment() const
 {
     return environment_.get();
 }
+
 msr::airlib::Kinematics* PawnSimApi::getKinematics()
 {
     return kinematics_.get();
 }
+
 msr::airlib::Environment* PawnSimApi::getEnvironment()
 {
     return environment_.get();

@@ -111,9 +111,9 @@ void MultirotorPawnSimApi::updateRendering(float dt)
     }
 
     //UAirBlueprintLib::LogMessage(TEXT("Collision (raw) Count:"), FString::FromInt(collision_response.collision_count_raw), LogDebugLevel::Unimportant);
-    UAirBlueprintLib::LogMessage(TEXT("Collision Count:"),
-                                 FString::FromInt(collision_response.collision_count_non_resting),
-                                 LogDebugLevel::Informational);
+    // UAirBlueprintLib::LogMessage(TEXT("Collision Count:"),
+    //                              FString::FromInt(collision_response.collision_count_non_resting),
+    //                              LogDebugLevel::Informational);
 
     for (auto i = 0; i < vehicle_api_messages_.size(); ++i) {
         UAirBlueprintLib::LogMessage(FString(vehicle_api_messages_[i].c_str()), TEXT(""), LogDebugLevel::Success, 30);

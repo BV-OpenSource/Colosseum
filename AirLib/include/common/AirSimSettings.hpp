@@ -35,11 +35,15 @@ namespace airlib
         static constexpr char const* kVehicleTypePhysXCar = "physxcar";
         static constexpr char const* kVehicleTypeArduRover = "ardurover";
         static constexpr char const* kVehicleTypeComputerVision = "computervision";
+        static constexpr char const* kVehicleTypeArduPlane = "arduplane";
+        static constexpr char const* kVehicleTypePX4Plane = "px4plane";
+        static constexpr char const* kVehicleTypePlaneFlight = "planeflight";
 
         static constexpr char const* kVehicleInertialFrame = "VehicleInertialFrame";
         static constexpr char const* kSensorLocalFrame = "SensorLocalFrame";
 
         static constexpr char const* kSimModeTypeMultirotor = "Multirotor";
+        static constexpr char const* kSimModeTypeFixedWing = "FixedWing";
         static constexpr char const* kSimModeTypeCar = "Car";
         static constexpr char const* kSimModeTypeComputerVision = "ComputerVision";
 
@@ -101,6 +105,7 @@ namespace airlib
         {
             int remote_control_id = -1;
             bool allow_api_when_disconnected = false;
+            RCType_ type = RCType_::TaranisX9D;
         };
 
         struct Rotation
@@ -268,6 +273,7 @@ namespace airlib
             //optional
             std::string default_vehicle_state;
             std::string pawn_path;
+            std::string model;
             bool allow_api_always = true;
             bool auto_create = true;
             bool enable_collision_passthrough = false;
@@ -604,7 +610,7 @@ namespace airlib
 
             physics_engine_name = settings_json.getString("PhysicsEngineName", "");
             if (physics_engine_name == "") {
-                if (simmode_name == kSimModeTypeMultirotor)
+                if (simmode_name == kSimModeTypeMultirotor || simmode_name == kSimModeTypeFixedWing)
                     physics_engine_name = "FastPhysicsEngine";
                 else
                     physics_engine_name = "PhysX"; //this value is only informational for now
@@ -621,7 +627,7 @@ namespace airlib
             std::string view_mode_string = settings_json.getString("ViewMode", "");
 
             if (view_mode_string == "") {
-                if (simmode_name == kSimModeTypeMultirotor)
+                if (simmode_name == kSimModeTypeMultirotor  || simmode_name == kSimModeTypeFixedWing)
                     view_mode_string = "FlyWithMe";
                 else if (simmode_name == kSimModeTypeComputerVision)
                     view_mode_string = "Fpv";
@@ -657,6 +663,11 @@ namespace airlib
                                                               simmode_name == kSimModeTypeMultirotor ? 0 : -1);
                 rc_setting.allow_api_when_disconnected = rc_json.getBool("AllowAPIWhenDisconnected",
                                                                          rc_setting.allow_api_when_disconnected);
+                int rcType = rc_json.getInt("Type", 0);
+                if (rcType == 0)
+                    rc_setting.type = RCType_::TaranisX9D;
+                else if (rcType == 1)
+                    rc_setting.type = RCType_::PS3;
             }
         }
 
@@ -817,12 +828,13 @@ namespace airlib
             auto vehicle_type = Utils::toLower(settings_json.getString("VehicleType", ""));
 
             std::unique_ptr<VehicleSetting> vehicle_setting;
-            if (vehicle_type == kVehicleTypePX4 || vehicle_type == kVehicleTypeArduCopterSolo || vehicle_type == kVehicleTypeArduCopter || vehicle_type == kVehicleTypeArduRover)
+            if (vehicle_type == kVehicleTypePX4 || vehicle_type == kVehicleTypeArduCopterSolo || vehicle_type == kVehicleTypeArduCopter || vehicle_type == kVehicleTypeArduRover
+                || vehicle_type == kVehicleTypeArduPlane || vehicle_type == kVehicleTypePX4Plane)
                 vehicle_setting = createMavLinkVehicleSetting(settings_json);
             //for everything else we don't need derived class yet
             else {
                 vehicle_setting = std::unique_ptr<VehicleSetting>(new VehicleSetting());
-                if (vehicle_type == kVehicleTypeSimpleFlight) {
+                if (vehicle_type == kVehicleTypeSimpleFlight  || vehicle_type == kVehicleTypePlaneFlight) {
                     //TODO: we should be selecting remote if available else keyboard
                     //currently keyboard is not supported so use rc as default
                     vehicle_setting->rc.remote_control_id = 0;
@@ -848,6 +860,7 @@ namespace airlib
                                                                        vehicle_setting->enable_collisions);
             vehicle_setting->is_fpv_vehicle = settings_json.getBool("IsFpvVehicle",
                                                                     vehicle_setting->is_fpv_vehicle);
+            vehicle_setting->model = settings_json.getString("Model", "");
 
             loadRCSetting(simmode_name, settings_json, vehicle_setting->rc);
 
@@ -888,6 +901,14 @@ namespace airlib
                 auto cv_setting = std::unique_ptr<VehicleSetting>(new VehicleSetting("ComputerVision", kVehicleTypeComputerVision));
                 cv_setting->sensors = sensor_defaults;
                 vehicles[cv_setting->vehicle_name] = std::move(cv_setting);
+            }
+            else if (simmode_name == kSimModeTypeFixedWing){
+                /* This Broke the call as there was a null pointer call
+                create default fixedwing vehicle -> variable arduplane set as default*/
+                auto arduplane_setting = std::unique_ptr<VehicleSetting>(new VehicleSetting("FixedWing", kVehicleTypePlaneFlight));
+                arduplane_setting->vehicle_name = "ArduPlane";
+                arduplane_setting->vehicle_type = kVehicleTypeArduPlane;
+                vehicles[arduplane_setting->vehicle_name] = std::move(arduplane_setting);
             }
             else {
                 throw std::invalid_argument(Utils::stringf(
@@ -931,6 +952,8 @@ namespace airlib
                                PawnPath("Class'/AirSim/Blueprints/BP_FlyingPawn.BP_FlyingPawn_C'"));
             pawn_paths.emplace("DefaultComputerVision",
                                PawnPath("Class'/AirSim/Blueprints/BP_ComputerVisionPawn.BP_ComputerVisionPawn_C'"));
+            pawn_paths.emplace("DefaultFixedWing",
+                               PawnPath("Class'/AirSim/Blueprints/BP_FixedWingPawn.BP_FixedWingPawn_C'"));
         }
 
         static void loadPawnPaths(const Settings& settings_json, std::map<std::string, PawnPath>& pawn_paths)
@@ -1271,8 +1294,8 @@ namespace airlib
                     //PX4 enabled vehicle
                     clock_type = "SteppableClock";
                     for (auto const& vehicle : vehicles) {
-                        if (vehicle.second->auto_create &&
-                            vehicle.second->vehicle_type == kVehicleTypePX4) {
+                        if (vehicle.second->auto_create && 
+                            (vehicle.second->vehicle_type == kVehicleTypePX4 || vehicle.second->vehicle_type == kVehicleTypePX4Plane)){
                             clock_type = "ScalableClock";
                             break;
                         }
@@ -1371,7 +1394,7 @@ namespace airlib
         static void createDefaultSensorSettings(const std::string& simmode_name,
                                                 std::map<std::string, std::shared_ptr<SensorSetting>>& sensors)
         {
-            if (simmode_name == kSimModeTypeMultirotor) {
+            if (simmode_name == kSimModeTypeMultirotor || simmode_name == kSimModeTypeFixedWing) {
                 sensors["imu"] = createSensorSetting(SensorBase::SensorType::Imu, "imu", true);
                 sensors["magnetometer"] = createSensorSetting(SensorBase::SensorType::Magnetometer, "magnetometer", true);
                 sensors["gps"] = createSensorSetting(SensorBase::SensorType::Gps, "gps", true);

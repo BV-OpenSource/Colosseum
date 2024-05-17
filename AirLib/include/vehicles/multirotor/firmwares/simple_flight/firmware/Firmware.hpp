@@ -71,7 +71,7 @@ public:
         }
 
         //finally write the motor outputs
-        for (uint16_t motor_index = 0; motor_index < params_->motor.motor_count; ++motor_index)
+        for (uint16_t motor_index = 0; motor_index < motor_outputs_.size(); ++motor_index)
             board_->writeOutput(motor_index, motor_outputs_.at(motor_index));
 
         comm_link_->update();

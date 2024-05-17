@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 
 #include "PawnSimApi.h"
+#include "vehicles/multirotor/api/MultirotorCommon.hpp"
 #include "vehicles/multirotor/MultiRotorPhysicsBody.hpp"
 #include "vehicles/multirotor/MultiRotorParams.hpp"
 #include "physics//Kinematics.hpp"
@@ -21,6 +22,7 @@ public:
     typedef msr::airlib::StateReporter StateReporter;
     typedef msr::airlib::UpdatableObject UpdatableObject;
     typedef msr::airlib::Pose Pose;
+    typedef msr::airlib::RotorStates RotorStates;
 
     typedef MultirotorPawnEvents::RotorActuatorInfo RotorActuatorInfo;
 
@@ -65,7 +67,7 @@ private:
     std::vector<RotorActuatorInfo> rotor_actuator_info_;
 
     //show info on collision response from physics engine
-    CollisionResponse collision_response;
+    msr::airlib::CollisionResponse collision_response;
 
     MultirotorPawnEvents* pawn_events_;
 

@@ -51,6 +51,8 @@ public:
         pid_->setMeasured(state_estimator_->getAngularVelocity()[axis_]);
         pid_->update();
 
+        //common_utils::Utils::log(common_utils::Utils::stringf("RateGoal %d: %f", axis_, goal_->getGoalValue()[axis_]));
+        //common_utils::Utils::log(common_utils::Utils::stringf("RateActual %d: %f", axis_, state_estimator_->getAngularVelocity()[axis_]));
         output_ = pid_->getOutput();
     }
 

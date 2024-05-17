@@ -114,15 +114,18 @@ PawnEvents* ASimModeWorldMultiRotor::getVehiclePawnEvents(APawn* pawn) const
 {
     return static_cast<TVehiclePawn*>(pawn)->getPawnEvents();
 }
+
 const common_utils::UniqueValueMap<std::string, APIPCamera*> ASimModeWorldMultiRotor::getVehiclePawnCameras(
     APawn* pawn) const
 {
     return (static_cast<const TVehiclePawn*>(pawn))->getCameras();
 }
+
 void ASimModeWorldMultiRotor::initializeVehiclePawn(APawn* pawn)
 {
     static_cast<TVehiclePawn*>(pawn)->initializeForBeginPlay();
 }
+
 std::unique_ptr<PawnSimApi> ASimModeWorldMultiRotor::createVehicleSimApi(
     const PawnSimApi::Params& pawn_sim_api_params) const
 {
@@ -132,6 +135,7 @@ std::unique_ptr<PawnSimApi> ASimModeWorldMultiRotor::createVehicleSimApi(
     //vehicle_sim_api->reset();
     return vehicle_sim_api;
 }
+
 msr::airlib::VehicleApiBase* ASimModeWorldMultiRotor::getVehicleApi(const PawnSimApi::Params& pawn_sim_api_params,
                                                                     const PawnSimApi* sim_api) const
 {

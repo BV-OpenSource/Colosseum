@@ -109,6 +109,11 @@ public:
         val4_ = vals[3];
     }
 
+    void setThrottle(const T& val)
+    {
+        val4_ = val;
+    }
+
     T& val4()
     {
         return val4_;

@@ -157,6 +157,13 @@ namespace airlib
         vector<int> buttons;
     };
 
+    enum class RCType_
+    {
+        Unknown = -1,
+        TaranisX9D,
+        PS3
+    };
+
     struct Odometry
     {
         PoseWithCovariance pose;

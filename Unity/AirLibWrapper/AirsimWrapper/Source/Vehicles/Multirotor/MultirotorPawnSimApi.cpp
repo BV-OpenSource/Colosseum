@@ -64,6 +64,7 @@ void MultirotorPawnSimApi::updateRenderedState(float dt)
         const auto& rotor_output = multirotor_physics_body_->getRotorOutput(i);
         RotorActuatorInfo* info = &rotor_actuator_info_[i];
         info->rotor_speed = rotor_output.speed;
+        //std::cout << "MotorWrapper " << i << " at speed " << info->rotor_speed << std::endl;
         info->rotor_direction = static_cast<int>(rotor_output.turning_direction);
         info->rotor_thrust = rotor_output.thrust;
         info->rotor_control_filtered = rotor_output.control_signal_filtered;

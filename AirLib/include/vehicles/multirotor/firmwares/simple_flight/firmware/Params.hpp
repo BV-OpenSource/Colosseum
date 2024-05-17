@@ -1,6 +1,7 @@
 #pragma once
 
 #include "interfaces/CommonStructs.hpp"
+#include "common/CommonStructs.hpp"
 
 namespace simple_flight
 {
@@ -49,6 +50,8 @@ public:
 
         bool allow_api_when_disconnected = false;
         bool allow_api_always = false;
+
+        msr::airlib::RCType_ type = msr::airlib::RCType_::TaranisX9D;
 
     } rc;
 

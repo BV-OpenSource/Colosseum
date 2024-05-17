@@ -132,7 +132,7 @@ namespace airlib
     bool MultirotorApiBase::moveByMotorPWMs(float front_right_pwm, float rear_left_pwm, float front_left_pwm, float rear_right_pwm, float duration)
     {
         SingleTaskCall lock(this);
-
+        std::cout << "MoveByMotorPWMs" << std::endl;
         if (duration <= 0)
             return true;
 

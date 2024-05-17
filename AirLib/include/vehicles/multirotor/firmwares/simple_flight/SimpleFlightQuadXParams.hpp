@@ -34,10 +34,22 @@ namespace airlib
         {
             auto& params = getParams();
 
-            // Use connection_info_.model for the model name, see Px4MultiRotorParams for example
-
-            // Only Generic for now
-            setupFrameGenericQuad(params);
+            Utils::log(Utils::stringf("Vehicle model %s", vehicle_setting_->model.c_str()), Utils::kLogLevelInfo);
+            // Use vehicle_setting_->model for the model name, see Px4MultiRotorParams for example
+            if (vehicle_setting_->model == "HEIFU") {
+                setupFrameHEIFU(params);
+            }
+            else if (vehicle_setting_->model == "Hexacopter") {
+                setupFrameGenericHex(params);
+            }
+            else if (vehicle_setting_->model == "Octocopter") {
+                setupFrameGenericOcto(params);
+            }
+            else {
+                Utils::log(Utils::stringf("Vehicle model not recognized! GenericQuad is used."), Utils::kLogLevelWarn);
+                // Only Generic for now
+                setupFrameGenericQuad(params);
+            }
         }
 
         virtual const SensorFactory* getSensorFactory() const override

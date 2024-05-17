@@ -6,6 +6,7 @@
 #include "Vehicles/Multirotor/SimModeWorldMultiRotor.h"
 #include "Vehicles/Car/SimModeCar.h"
 #include "Vehicles/ComputerVision/SimModeComputerVision.h"
+#include "Vehicles/FixedWing/SimModeWorldFixedWing.h"
 
 #include "common/AirSimSettings.hpp"
 #include <stdexcept>
@@ -279,6 +280,10 @@ void ASimHUD::createSimMode()
         simmode_ = this->GetWorld()->SpawnActor<ASimModeComputerVision>(FVector::ZeroVector,
                                                                         FRotator::ZeroRotator,
                                                                         simmode_spawn_params);
+    else if (simmode_name == AirSimSettings::kSimModeTypeFixedWing)
+        simmode_ = this->GetWorld()->SpawnActor<ASimModeWorldFixedWing>(FVector::ZeroVector,
+                                                                         FRotator::ZeroRotator,
+                                                                         simmode_spawn_params);
     else {
         UAirBlueprintLib::ShowMessage(EAppMsgType::Ok, std::string("SimMode is not valid: ") + simmode_name, "Error");
         UAirBlueprintLib::LogMessageString("SimMode is not valid: ", simmode_name, LogDebugLevel::Failure);
@@ -305,15 +310,15 @@ void ASimHUD::initializeSubWindows()
             subwindow_cameras_[0] = subwindow_cameras_[1] = subwindow_cameras_[2] = nullptr;
     }
 
-    for (const auto& setting : getSubWindowSettings()) {
-        APIPCamera* camera = simmode_->getCamera(msr::airlib::CameraDetails(setting.camera_name, setting.vehicle_name, setting.external));
-        if (camera)
-            subwindow_cameras_[setting.window_index] = camera;
-        else
-            UAirBlueprintLib::LogMessageString("Invalid Camera settings in <SubWindows> element",
-                                               std::to_string(setting.window_index),
-                                               LogDebugLevel::Failure);
-    }
+    // for (const auto& setting : getSubWindowSettings()) {
+    //     APIPCamera* camera = simmode_->getCamera(msr::airlib::CameraDetails(setting.camera_name, setting.vehicle_name, setting.external));
+    //     if (camera)
+    //         subwindow_cameras_[setting.window_index] = camera;
+    //     else
+    //         UAirBlueprintLib::LogMessageString("Invalid Camera settings in <SubWindows> element",
+    //                                            std::to_string(setting.window_index),
+    //                                            LogDebugLevel::Failure);
+    // }
 }
 
 FString ASimHUD::getLaunchPath(const std::string& filename)

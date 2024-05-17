@@ -6,6 +6,8 @@
 #include "interfaces/IBoardInputPins.hpp"
 #include "interfaces/IGoal.hpp"
 #include "interfaces/CommonStructs.hpp"
+#include "common/CommonStructs.hpp"
+#include "common/Common.hpp"
 
 namespace simple_flight
 {
@@ -177,11 +179,35 @@ private:
         //set up RC mode as level or rate
         angle_mode_ = board_inputs_->readChannel(params_->rc.rate_level_mode_channel);
         if (last_angle_mode_ != angle_mode_) {
-            //for 3 way switch, 1/3 value for each position
-            if (angle_mode_ < params_->rc.max_angle_level_switch)
-                goal_mode_ = GoalMode::getStandardAngleMode();
-            else
-                goal_mode_ = GoalMode::getAllRateMode();
+            if (params_->rc.type == msr::airlib::RCType_::TaranisX9D) {
+                //for 3 way switch, 1/3 value for each position
+                if (angle_mode_ < params_->rc.max_angle_level_switch){
+                    goal_mode_ = GoalMode::getStandardAngleMode();
+                    common_utils::Utils::log(common_utils::Utils::stringf("RC Mode: Angle"), common_utils::Utils::kLogLevelInfo);
+                }else{
+                    goal_mode_ = GoalMode::getAllRateMode();
+                    common_utils::Utils::log(common_utils::Utils::stringf("RC Mode: Rate"), common_utils::Utils::kLogLevelInfo);
+                }
+            } else if (params_->rc.type == msr::airlib::RCType_::PS3) {
+                if (angle_mode_ < params_->rc.max_angle_level_switch){
+                    switch(lastGoalMode){
+                        case 0:
+                        case 11:
+                            goal_mode_ = GoalMode::getPositionMode();
+                            common_utils::Utils::log(common_utils::Utils::stringf("RC Mode: Position"), common_utils::Utils::kLogLevelInfo);
+                            break;
+                        case 13:
+                            goal_mode_ = GoalMode::getVelocityXYPosZMode();
+                            common_utils::Utils::log(common_utils::Utils::stringf("RC Mode: VelocityXY"), common_utils::Utils::kLogLevelInfo);
+                            break;
+                        case 12:
+                            goal_mode_ = GoalMode::getVelocityMode();
+                            common_utils::Utils::log(common_utils::Utils::stringf("RC Mode: All Velocity"), common_utils::Utils::kLogLevelInfo);
+                            break;
+                    }
+                    lastGoalMode = static_cast<int>(goal_mode_[0]) + static_cast<int>(goal_mode_[2]) + static_cast<int>(goal_mode_[3]);
+                }
+            }
 
             last_angle_mode_ = angle_mode_;
         }
@@ -201,8 +227,20 @@ private:
 
     void updateGoal(const Axis4r& channels)
     {
+        if (goal_mode_.equals4(GoalMode::getPositionMode())){
+            // Convert throttle offset from 0<->1 to -1<->1
+            Axis4r newThrottle = channels.colWiseMultiply4(Axis4r(1.0, 1.0, 1.0, 2.0));
+            newThrottle.setThrottle(newThrottle.throttle()-1.0);
+
+            // Scale controller
+            Axis4r OffsetGoal = newThrottle.colWiseMultiply4(Axis4r(0.01, 0.01, 0.01, 0.01));
+            goal_[0] += OffsetGoal[0];
+            goal_[1] -= OffsetGoal[1];
+            goal_[2] += OffsetGoal[2];
+            goal_[3] -= OffsetGoal[3];
+        }
         //for 3 way switch, 1/3 value for each position
-        if (angle_mode_ < params_->rc.max_angle_level_switch) {
+        else if (angle_mode_ < params_->rc.max_angle_level_switch) {
             //we are in control-by-level mode
             goal_ = channels.colWiseMultiply4(params_->angle_level_pid.max_limit);
         }
@@ -256,6 +294,7 @@ private:
 
     Axis4r goal_;
     GoalMode goal_mode_;
+    int lastGoalMode = 0;
 
     uint64_t last_rec_read_;
     TReal angle_mode_, last_angle_mode_;

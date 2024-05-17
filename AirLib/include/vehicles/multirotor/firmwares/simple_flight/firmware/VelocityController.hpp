@@ -26,6 +26,7 @@ public:
 
     virtual void initialize(unsigned int axis, const IGoal* goal, const IStateEstimator* state_estimator) override
     {
+        //common_utils::Utils::log(common_utils::Utils::stringf("VelocityController: %d", axis));
         axis_ = axis;
         goal_ = goal;
         state_estimator_ = state_estimator;
